@@ -4,9 +4,9 @@ Output format verified empirically on git 2.43 (PLAN.md §3):
 
     git -C <git_dir> log --no-merges -M50% --numstat -z --format=<...> HEAD
 
-Records are NUL-separated. A record starting with \\x1f is a commit header
-(fields: hash, committer ts, author name, author email). Other records are
-numstat entries:
+Records are NUL-separated. A record starting with \x1f is a commit header
+(fields: hash, committer ts, author name, author email, subject). Other
+records are numstat entries:
 
     "<added>\\t<removed>\\t<path>"          normal change (deletion keeps old path)
     "-\\t-\\t<path>"                        binary file -> skipped (not measured)
@@ -23,7 +23,7 @@ from pathlib import Path
 
 FIELD_SEP = b"\x1f"
 RECORD_SEP = b"\x00"
-_LOG_FORMAT = "%x1f%H%x1f%ct%x1f%an%x1f%ae"
+_LOG_FORMAT = "%x1f%H%x1f%ct%x1f%an%x1f%ae%x1f%s"
 _CHUNK = 1 << 16
 
 
@@ -32,6 +32,7 @@ class Commit:
     hash: str
     author_id: int
     ts: int
+    subject: str = ""
     facts: list = field(default_factory=list)  # [(path_id, added, removed), ...]
 
 
@@ -110,8 +111,8 @@ def parse_repo(git_dir, progress=None) -> RepoData:
             return
 
         if token.startswith(FIELD_SEP):
-            parts = token.split(FIELD_SEP)
-            if len(parts) != 5:
+            parts = token.split(FIELD_SEP, 5)
+            if len(parts) < 5:
                 return  # malformed header, skip
             current = Commit(
                 hash=parts[1].decode("utf-8", "replace"),
@@ -120,6 +121,7 @@ def parse_repo(git_dir, progress=None) -> RepoData:
                     parts[3].decode("utf-8", "replace"),
                     parts[4].decode("utf-8", "replace"),
                 ),
+                subject=(parts[5].decode("utf-8", "replace") if len(parts) > 5 else ""),
             )
             data.commits.append(current)
             if progress and len(data.commits) % 500 == 0:

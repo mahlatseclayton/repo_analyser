@@ -166,6 +166,84 @@ def api_set_merges(rid: str):
 
 
 # ---------------------------------------------------------------------------
+# Metrics + pickers (T7): POST /metrics, GET /commits, GET /tree
+# ---------------------------------------------------------------------------
+
+_COMMIT_MODES = ("all", "range", "list")
+
+
+@app.post("/api/repos/<rid>/metrics")
+def api_metrics(rid: str):
+    """Metrics for a path + commit set + author filter (PLAN §7 contract)."""
+    meta, err = _repo_ready(rid)
+    if err:
+        return err
+    payload = request.get_json(silent=True) or {}
+    commits = payload.get("commits") or {"mode": "all"}
+    if not isinstance(commits, dict) or (commits.get("mode") or "all") not in _COMMIT_MODES:
+        return jsonify(error=f"commits.mode must be one of {list(_COMMIT_MODES)}"), 400
+    author_keys = payload.get("authorKeys") or []
+    if not isinstance(author_keys, list) or not all(isinstance(k, str) for k in author_keys):
+        return jsonify(error="authorKeys must be a list of strings"), 400
+    try:
+        result = service.metric_query(
+            meta,
+            path=payload.get("path") or "",
+            commits=commits,
+            author_keys=author_keys,
+        )
+    except KeyError as e:
+        return jsonify(error=e.args[0] if e.args else "unknown path"), 400
+    except ValueError as e:
+        return jsonify(error=str(e)), 400
+    return jsonify(result)
+
+
+@app.get("/api/repos/<rid>/commits")
+def api_repo_commits(rid: str):
+    """Newest-first commit list for the manual selection picker."""
+    meta, err = _repo_ready(rid)
+    if err:
+        return err
+    entry, err = _loaded(meta)
+    if err:
+        return err
+    try:
+        limit = int(request.args.get("limit") or 100)
+    except ValueError:
+        return jsonify(error="limit must be an integer"), 400
+    limit = max(1, min(limit, 1000))
+    q = (request.args.get("q") or "").strip().lower()
+    engine = entry["engine"]
+    rows = []
+    for c in entry["data"].commits:  # newest first
+        key = engine.author_meta[c.author_id][0]
+        if q and q not in c.subject.lower() \
+                and not c.hash.lower().startswith(q) and q not in key.lower():
+            continue
+        rows.append({"hash": c.hash, "ts": c.ts, "subject": c.subject, "author": key})
+    return jsonify(commits=rows[:limit], total=len(rows), limit=limit)
+
+
+@app.get("/api/repos/<rid>/tree")
+def api_repo_tree(rid: str):
+    """All queryable paths (files and dirs, dirs with trailing /) for the picker."""
+    meta, err = _repo_ready(rid)
+    if err:
+        return err
+    entry, err = _loaded(meta)
+    if err:
+        return err
+    rows = [
+        {"path": p, "type": kind}
+        for kind, p in entry["engine"].objects
+        if p != ""
+    ]
+    rows.sort(key=lambda r: r["path"])
+    return jsonify(tree=rows, count=len(rows))
+
+
+# ---------------------------------------------------------------------------
 # Static frontend (production build in web/dist; dev uses the Vite server)
 # ---------------------------------------------------------------------------
 
