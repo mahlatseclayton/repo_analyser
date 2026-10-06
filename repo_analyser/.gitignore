@@ -1,0 +1,14 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Runtime data (repo clones, uploads, fixtures)
+data/
+
+# Node / frontend
+node_modules/
+web/dist/
+
+# Misc
+.DS_Store
