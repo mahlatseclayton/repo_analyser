@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { api } from './api'
 import Dashboard from './Dashboard'
 import FilterBar from './FilterBar'
+import MergeModal from './MergeModal'
 import { fmtInt, Spinner, StatusBadge, Toasts } from './ui'
 
 const DEFAULT_FILTER = { authorKeys: [], path: '', commits: { mode: 'all' } }
@@ -20,6 +21,8 @@ export default function App() {
   const [metrics, setMetrics] = useState(null)
   const [metricsLoading, setMetricsLoading] = useState(false)
   const [metricsError, setMetricsError] = useState(null)
+  const [mergeOpen, setMergeOpen] = useState(false)
+  const [dataVersion, setDataVersion] = useState(0) // bumped after author merges
   const toastSeq = useRef(0)
 
   const toast = useCallback((text, type = 'info') => {
@@ -68,6 +71,7 @@ export default function App() {
     setMetrics(null)
     setMetricsError(null)
     setMetricsLoading(false)
+    setMergeOpen(false)
   }, [selectedId])
 
   // Load authors + tree for the selected repo.
@@ -91,7 +95,7 @@ export default function App() {
     return () => {
       alive = false
     }
-  }, [selId, selStatus, toast])
+  }, [selId, selStatus, dataVersion, toast])
 
   // Fetch metrics for the current filter (debounced).
   useEffect(() => {
@@ -132,7 +136,7 @@ export default function App() {
       alive = false
       window.clearTimeout(t)
     }
-  }, [selId, selStatus, filter])
+  }, [selId, selStatus, filter, dataVersion])
 
   const handleAdded = useCallback(
     (repo, message) => {
@@ -210,10 +214,26 @@ export default function App() {
               metricsLoading={metricsLoading}
               metricsError={metricsError}
               onDelete={handleDelete}
+              onOpenMerge={() => setMergeOpen(true)}
             />
           )}
         </main>
       </div>
+
+      {mergeOpen && selected && detail && (
+        <MergeModal
+          repo={selected}
+          authors={detail.authors}
+          toast={toast}
+          onClose={() => setMergeOpen(false)}
+          onSaved={() => {
+            setMergeOpen(false)
+            setFilter((f) => ({ ...f, authorKeys: [] }))
+            setDataVersion((v) => v + 1)
+            toast('Author merges saved — all views refreshed', 'success')
+          }}
+        />
+      )}
 
       <Toasts items={toasts} dismiss={(id) => setToasts((t) => t.filter((x) => x.id !== id))} />
     </div>
@@ -364,6 +384,7 @@ function Workspace({
   metricsLoading,
   metricsError,
   onDelete,
+  onOpenMerge,
 }) {
   const source =
     repo.source && repo.source.type === 'url' ? repo.source.url : (repo.source || {}).filename
@@ -406,6 +427,7 @@ function Workspace({
             tree={detail.tree}
             filter={filter}
             onChange={onFilterChange}
+            onOpenMerge={onOpenMerge}
           />
           <Results
             metrics={metrics}
