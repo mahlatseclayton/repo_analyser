@@ -9,7 +9,9 @@ data/
 # Node / frontend
 node_modules/
 web/dist/
+web/.vite/
 
 # Misc
 .DS_Store
 .env
+Qoder/
