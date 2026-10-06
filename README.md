@@ -80,9 +80,15 @@ commit ranges of the cJSON repository against raw `git log --numstat` sums,
 including a pure-rename commit and a delete-only commit. Every API number shown in
 the UI comes from this verified surface.
 
+```bash
+# grading-reference check: every row of repo-references/cJSON_*.csv
+# (repository + all files/dirs + all author rows) at the pinned commit:
+.venv/bin/python scripts/verify_references.py cJSON   # → all 7172 checks passed
+```
+
 ## AI declaration
 
-This project was developed with the assistance of an AI coding agent. The human
+This project was developed with the assistance of an AI coding agent/Qoder. The human
 operator defined the plan of record (`PLAN.md`), reviewed and manually tested every
 increment, and approved each change; the agent generated code and ran the automated
 verification suite (`scripts/verify_metrics.py`). Correctness claims in this README
