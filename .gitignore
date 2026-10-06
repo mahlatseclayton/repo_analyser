@@ -15,3 +15,6 @@ web/.vite/
 .DS_Store
 .env
 Qoder/
+
+# Submission artifact
+rat_submission.zip
