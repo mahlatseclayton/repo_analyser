@@ -472,6 +472,11 @@ code {
   background: var(--accent-soft);
 }
 
+.menu-item.active {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
 .menu-item input {
   accent-color: var(--accent);
 }

@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { api } from './api'
-import { Spinner, StatusBadge, Toasts } from './ui'
+import FilterBar from './FilterBar'
+import { fmtInt, Spinner, StatusBadge, Toasts } from './ui'
+
+const DEFAULT_FILTER = { authorKeys: [], path: '', commits: { mode: 'all' } }
 
 // ---- app shell -------------------------------------------------------------
 
@@ -10,6 +13,12 @@ export default function App() {
   const [listError, setListError] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [toasts, setToasts] = useState([])
+  const [detail, setDetail] = useState(null) // {authors, tree} of the selected repo
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [filter, setFilter] = useState(DEFAULT_FILTER)
+  const [metrics, setMetrics] = useState(null)
+  const [metricsLoading, setMetricsLoading] = useState(false)
+  const [metricsError, setMetricsError] = useState(null)
   const toastSeq = useRef(0)
 
   const toast = useCallback((text, type = 'info') => {
@@ -49,6 +58,80 @@ export default function App() {
   }, [repos, selectedId])
 
   const selected = (repos || []).find((r) => r.id === selectedId) || null
+  const selId = selected ? selected.id : null
+  const selStatus = selected ? selected.status : null
+
+  // Reset filters when switching repos.
+  useEffect(() => {
+    setFilter(DEFAULT_FILTER)
+    setMetrics(null)
+    setMetricsError(null)
+    setMetricsLoading(false)
+  }, [selectedId])
+
+  // Load authors + tree for the selected repo.
+  useEffect(() => {
+    if (selId == null || selStatus !== 'ready') {
+      setDetail(null)
+      return undefined
+    }
+    let alive = true
+    setDetailLoading(true)
+    Promise.all([api.authors(selId), api.tree(selId)])
+      .then(([a, t]) => {
+        if (alive) setDetail({ authors: a.authors || [], tree: t.tree || [] })
+      })
+      .catch((e) => {
+        if (alive) toast('Failed to load repo data: ' + e.message, 'error')
+      })
+      .finally(() => {
+        if (alive) setDetailLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [selId, selStatus, toast])
+
+  // Fetch metrics for the current filter (debounced).
+  useEffect(() => {
+    if (selId == null || selStatus !== 'ready') return undefined
+    const c = filter.commits || { mode: 'all' }
+    if (c.mode === 'list' && !(c.hashes || []).length) {
+      setMetrics(null)
+      setMetricsError(null)
+      return undefined
+    }
+    let alive = true
+    setMetricsLoading(true)
+    const t = window.setTimeout(async () => {
+      try {
+        const m = await api.metrics(selId, {
+          path: filter.path || '',
+          authorKeys: filter.authorKeys,
+          commits: {
+            mode: c.mode,
+            ...(c.mode === 'range' ? { start: c.start, end: c.end } : {}),
+            ...(c.mode === 'list' ? { hashes: c.hashes } : {}),
+          },
+        })
+        if (alive) {
+          setMetrics(m)
+          setMetricsError(null)
+        }
+      } catch (e) {
+        if (alive) {
+          setMetrics(null)
+          setMetricsError(e.message)
+        }
+      } finally {
+        if (alive) setMetricsLoading(false)
+      }
+    }, 250)
+    return () => {
+      alive = false
+      window.clearTimeout(t)
+    }
+  }, [selId, selStatus, filter])
 
   const handleAdded = useCallback(
     (repo, message) => {
@@ -115,7 +198,19 @@ export default function App() {
               </p>
             </div>
           )}
-          {selected && <Workspace repo={selected} onDelete={handleDelete} />}
+          {selected && (
+            <Workspace
+              repo={selected}
+              detail={detail}
+              detailLoading={detailLoading}
+              filter={filter}
+              onFilterChange={setFilter}
+              metrics={metrics}
+              metricsLoading={metricsLoading}
+              metricsError={metricsError}
+              onDelete={handleDelete}
+            />
+          )}
         </main>
       </div>
 
@@ -258,29 +353,33 @@ function AddRepo({ onAdded, toast }) {
 
 // ---- workspace (metrics views plug in here) --------------------------------
 
-function Workspace({ repo, onDelete }) {
+function Workspace({
+  repo,
+  detail,
+  detailLoading,
+  filter,
+  onFilterChange,
+  metrics,
+  metricsLoading,
+  metricsError,
+  onDelete,
+}) {
   const source =
     repo.source && repo.source.type === 'url' ? repo.source.url : (repo.source || {}).filename
+  const listModeEmpty = filter.commits.mode === 'list' && !(filter.commits.hashes || []).length
 
   return (
     <div>
       <div className="page-head">
         <h2>{repo.name}</h2>
         <StatusBadge status={repo.status} />
+        <span className="muted small">
+          <code>{source}</code>
+        </span>
         <span className="spacer" />
         <button className="btn danger" onClick={() => onDelete(repo)}>
           Delete
         </button>
-      </div>
-
-      <div className="card">
-        <div className="row small muted">
-          <span>
-            Source: <code>{source}</code>
-          </span>
-          <span>·</span>
-          <span>Added {new Date(repo.created_at).toLocaleString()}</span>
-        </div>
       </div>
 
       {(repo.status === 'cloning' || repo.status === 'extracting') && (
@@ -294,9 +393,80 @@ function Workspace({ repo, onDelete }) {
         </div>
       )}
 
-      {repo.status === 'ready' && (
-        <p className="muted">Repository ready — metrics dashboard arrives in the next tasks.</p>
+      {repo.status === 'ready' && detailLoading && !detail && (
+        <Spinner label="Loading repo data (one-pass git parse)…" />
       )}
+
+      {repo.status === 'ready' && detail && (
+        <>
+          <FilterBar
+            repoId={repo.id}
+            authors={detail.authors}
+            tree={detail.tree}
+            filter={filter}
+            onChange={onFilterChange}
+          />
+          <FilterSummary
+            metrics={metrics}
+            metricsLoading={metricsLoading}
+            metricsError={metricsError}
+            listModeEmpty={listModeEmpty}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+// Temporary result strip until the full dashboard lands (T11).
+function FilterSummary({ metrics, metricsLoading, metricsError, listModeEmpty }) {
+  if (listModeEmpty) {
+    return (
+      <div className="card">
+        <p className="muted">Manual mode: pick commits in the filter bar to build the commit set.</p>
+      </div>
+    )
+  }
+  if (metricsError) {
+    return (
+      <div className="card error-card">
+        <h3>Metrics query failed</h3>
+        <p className="error-text">{metricsError}</p>
+      </div>
+    )
+  }
+  if (!metrics) return <Spinner label="Computing metrics…" />
+  const t = metrics.totals
+  return (
+    <div className="card">
+      <div className="spread">
+        <h3>
+          Commit set |H| = {fmtInt(metrics.commit_set_size)}
+          {metricsLoading && <span className="muted small"> · updating…</span>}
+        </h3>
+        <span className="muted small">
+          object: <code>{metrics.object || '(root)'}</code>
+        </span>
+      </div>
+      <div className="cards">
+        <div className="stat">
+          <div className="label">Added</div>
+          <div className="value">{fmtInt(t.added)}</div>
+        </div>
+        <div className="stat">
+          <div className="label">Removed</div>
+          <div className="value">{fmtInt(t.removed)}</div>
+        </div>
+        <div className="stat">
+          <div className="label">Churn (λ)</div>
+          <div className="value">{fmtInt(t.churn)}</div>
+        </div>
+        <div className="stat">
+          <div className="label">Modifications (n)</div>
+          <div className="value">{fmtInt(t.modifications)}</div>
+        </div>
+      </div>
+      <p className="muted small">Full dashboard (charts, tables, author views) arrives in the next task.</p>
     </div>
   )
 }
