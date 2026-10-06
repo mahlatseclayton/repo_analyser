@@ -22,6 +22,10 @@ const PIE_COLORS = [
   '#818cf8', '#a5b4fc', '#c7d2fe', '#64748b',
 ]
 
+// Custom churn palette: jade green additions, crimson rose removals.
+const GOOD = '#0ba268'
+const BAD = '#e5484d'
+
 const TABS = [
   ['overview', 'Overview'],
   ['files', 'Files & Dirs'],
@@ -54,11 +58,11 @@ export default function Dashboard({ metrics }) {
 
 // ---- overview ---------------------------------------------------------------
 
-function Stat({ label, value, accent }) {
+function Stat({ label, value, accent, tone }) {
   return (
     <div className={'stat' + (accent ? ' accent' : '')}>
       <div className="label">{label}</div>
-      <div className="value">{value}</div>
+      <div className={'value' + (tone ? ' ' + tone : '')}>{value}</div>
     </div>
   )
 }
@@ -72,7 +76,8 @@ function FileTip({ active, payload }) {
     <div className="tip">
       <div className="tip-title">{r.path}</div>
       <div>
-        added {fmtInt(r.added)} · removed {fmtInt(r.removed)}
+        added <span className="num-good">+{fmtInt(r.added)}</span> · removed{' '}
+        <span className="num-bad">-{fmtInt(r.removed)}</span>
       </div>
       <div>
         λ {fmtInt(r.churn)} · n {fmtInt(r.modifications)}
@@ -90,9 +95,13 @@ function Overview({ metrics }) {
     <>
       <div className="cards">
         <Stat label="Commits |H|" value={fmtInt(metrics.commit_set_size)} accent />
-        <Stat label="Added l+" value={fmtInt(t.added)} />
-        <Stat label="Removed l−" value={fmtInt(t.removed)} />
-        <Stat label="Growth δ" value={fmtInt(t.growth)} />
+        <Stat label="Added l+" value={'+' + fmtInt(t.added)} tone="good" />
+        <Stat label="Removed l−" value={'-' + fmtInt(t.removed)} tone="bad" />
+        <Stat
+          label="Growth δ"
+          value={(t.growth > 0 ? '+' : '') + fmtInt(t.growth)}
+          tone={t.growth > 0 ? 'good' : t.growth < 0 ? 'bad' : undefined}
+        />
         <Stat label="Churn λ" value={fmtInt(t.churn)} />
         <Stat label="Modifications n" value={fmtInt(t.modifications)} />
         <Stat label="Frequency η" value={fmt2(t.frequency)} />
@@ -105,6 +114,16 @@ function Overview({ metrics }) {
           {series.length ? (
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={series} margin={{ top: 6, right: 8, left: -14, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="rat-g-added" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={GOOD} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={GOOD} stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id="rat-g-removed" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={BAD} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={BAD} stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid stroke="#eef2f7" vertical={false} />
                 <XAxis
                   dataKey="bucket"
@@ -114,15 +133,14 @@ function Overview({ metrics }) {
                   minTickGap={28}
                 />
                 <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickLine={false} axisLine={false} />
-                <Tooltip />
+                <Tooltip formatter={(v) => fmtInt(v)} />
                 <Legend />
                 <Area
                   type="monotone"
                   dataKey="added"
                   name="Added"
-                  stroke="#2563eb"
-                  fill="#2563eb"
-                  fillOpacity={0.12}
+                  stroke={GOOD}
+                  fill="url(#rat-g-added)"
                   strokeWidth={2}
                   dot={false}
                 />
@@ -130,9 +148,8 @@ function Overview({ metrics }) {
                   type="monotone"
                   dataKey="removed"
                   name="Removed"
-                  stroke="#94a3b8"
-                  fill="#94a3b8"
-                  fillOpacity={0.12}
+                  stroke={BAD}
+                  fill="url(#rat-g-removed)"
                   strokeWidth={2}
                   dot={false}
                 />
@@ -164,7 +181,9 @@ function Overview({ metrics }) {
                   tickFormatter={shorten}
                 />
                 <Tooltip cursor={{ fill: 'rgba(37, 99, 235, 0.06)' }} content={<FileTip />} />
-                <Bar dataKey="churn" name="Churn (λ)" fill="#2563eb" radius={[0, 4, 4, 0]} />
+                <Legend />
+                <Bar dataKey="added" name="Added" stackId="churn" fill={GOOD} />
+                <Bar dataKey="removed" name="Removed" stackId="churn" fill={BAD} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -179,9 +198,34 @@ function Overview({ metrics }) {
 // ---- files & dirs -----------------------------------------------------------
 
 const NUM_COLS = [
-  { key: 'added', label: 'l+', align: 'right', fmt: fmtInt },
-  { key: 'removed', label: 'l−', align: 'right', fmt: fmtInt },
-  { key: 'growth', label: 'δ', align: 'right', fmt: fmtInt },
+  {
+    key: 'added',
+    label: 'l+',
+    align: 'right',
+    render: (r) =>
+      r.added ? <span className="num-good">+{fmtInt(r.added)}</span> : <span className="muted">0</span>,
+  },
+  {
+    key: 'removed',
+    label: 'l−',
+    align: 'right',
+    render: (r) =>
+      r.removed ? <span className="num-bad">-{fmtInt(r.removed)}</span> : <span className="muted">0</span>,
+  },
+  {
+    key: 'growth',
+    label: 'δ',
+    align: 'right',
+    render: (r) =>
+      r.growth === 0 ? (
+        <span className="muted">0</span>
+      ) : (
+        <span className={r.growth > 0 ? 'num-good' : 'num-bad'}>
+          {r.growth > 0 ? '+' : ''}
+          {fmtInt(r.growth)}
+        </span>
+      ),
+  },
   { key: 'churn', label: 'λ', align: 'right', fmt: fmtInt },
   { key: 'modifications', label: 'n', align: 'right', fmt: fmtInt },
   { key: 'frequency', label: 'η', align: 'right', render: (r) => fmt2(r.frequency) },

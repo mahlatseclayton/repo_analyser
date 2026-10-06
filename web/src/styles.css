@@ -8,9 +8,22 @@
   --accent: #2563eb;
   --accent-dark: #1d4ed8;
   --accent-soft: #eff6ff;
-  --error: #dc2626;
-  --ok: #15803d;
+
+  /* custom status palette: jade green + crimson rose (not stock green/red) */
+  --good: #0ba268;
+  --good-strong: #06734e;
+  --good-soft: #e8f7f0;
+  --good-border: #bde7d4;
+  --bad: #e5484d;
+  --bad-strong: #b4372f;
+  --bad-soft: #fdecea;
+  --bad-border: #f6c9c5;
   --warn: #b45309;
+  --warn-soft: #fdf3e3;
+  --warn-border: #f3d9a7;
+
+  --ok: var(--good-strong);
+  --error: var(--bad-strong);
   --shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 
@@ -263,8 +276,8 @@ code {
 }
 
 .btn.danger:hover {
-  border-color: #fecaca;
-  background: #fef2f2;
+  border-color: var(--bad-border);
+  background: var(--bad-soft);
 }
 
 .btn.tiny {
@@ -280,16 +293,29 @@ code {
 }
 
 .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 2px 9px 2px 8px;
   border-radius: 999px;
   text-transform: capitalize;
+  border: 1px solid transparent;
 }
 
-.badge.ok { background: #dcfce7; color: var(--ok); }
-.badge.busy { background: #fef3c7; color: var(--warn); }
-.badge.bad { background: #fee2e2; color: var(--error); }
+.badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.badge.ok { background: var(--good-soft); color: var(--good-strong); border-color: var(--good-border); }
+.badge.busy { background: var(--warn-soft); color: var(--warn); border-color: var(--warn-border); }
+.badge.bad { background: var(--bad-soft); color: var(--bad-strong); border-color: var(--bad-border); }
 
 .chip {
   display: inline-flex;
@@ -343,7 +369,7 @@ code {
 }
 
 .card.error-card {
-  border-color: #fecaca;
+  border-color: var(--bad-border);
 }
 
 .muted { color: var(--muted); }
@@ -768,8 +794,8 @@ code {
   cursor: pointer;
 }
 
-.toast.error { border-left-color: var(--error); }
-.toast.success { border-left-color: var(--ok); }
+.toast.error { border-left-color: var(--bad); }
+.toast.success { border-left-color: var(--good); }
 
 /* ---- spinner --------------------------------------------------------------- */
 
@@ -803,9 +829,9 @@ code {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  border: 1px solid #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
+  border: 1px solid var(--bad-border);
+  background: var(--bad-soft);
+  color: #8c2621;
   border-radius: 10px;
   padding: 10px 14px;
   margin-bottom: 14px;
@@ -849,3 +875,9 @@ code {
   margin-bottom: 3px;
   word-break: break-all;
 }
+
+/* added / removed semantics — custom jade green vs crimson rose */
+.num-good { color: var(--good-strong); font-weight: 600; }
+.num-bad { color: var(--bad-strong); font-weight: 600; }
+.stat .value.good { color: var(--good-strong); }
+.stat .value.bad { color: var(--bad-strong); }
