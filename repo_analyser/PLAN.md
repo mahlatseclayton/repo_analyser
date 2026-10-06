@@ -151,7 +151,7 @@ Background jobs (started early, run while we code): `pip install` + `npm install
 - [x] **T10 (5m) P0 — Filter bar.** Author multi-select, searchable path picker (from `/tree`), commit mode All/Range/Manual (search + checkbox + select-all-shown), debounced refetch applies to all views. Commit.
 - [x] **T11 (8m) P0 — Dashboard views.** Overview cards + trend line + top-files bar chart; Files & Dirs sortable tables; Authors ownership pie + table. **[P2 extras: directory treemap, churn-vs-modifications scatter.]** Numbers must match API on cJSON. Commit.
 - [x] **T12 (4m) P1 — Author merge UI.** Modal: authors with counts, multi-select, canonical name/email picker, POST merges; refresh all views. Verify merge persists per repo E2E. Commit.
-- [ ] **T13 (5m) P0 — Integration + smoke + polish.** `npm run build` and serve `dist` via Flask; E2E: zip upload **and** URL clone, all filters, merge; fix issues; README (setup/run/architecture + AI-declaration note); rubric self-audit; RunPreview for you. Commit.
+- [x] **T13 (5m) P0 — Integration + smoke + polish.** `npm run build` and serve `dist` via Flask; E2E: zip upload **and** URL clone, all filters, merge; fix issues; README (setup/run/architecture + AI-declaration note); rubric self-audit; RunPreview for you. Commit.
 
 Nominal sum ≈65 min; parallel background jobs save ~5 min. P2 extras (treemap, scatter) ≈5 min are the only droppable scope.
 
