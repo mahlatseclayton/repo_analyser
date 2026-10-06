@@ -108,11 +108,11 @@ function Overview({ metrics }) {
         <Stat label="Churn rate ρ" value={fmt2(t.churn_rate)} />
       </div>
 
-      <div className="chart-grid">
+      <div className="chart-grid stack">
         <div className="card">
           <h3>Activity over time</h3>
           {series.length ? (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={380}>
               <AreaChart data={series} margin={{ top: 6, right: 8, left: -14, bottom: 0 }}>
                 <defs>
                   <linearGradient id="rat-g-added" x1="0" y1="0" x2="0" y2="1">
@@ -163,7 +163,7 @@ function Overview({ metrics }) {
         <div className="card">
           <h3>Top files by churn</h3>
           {topFiles.length ? (
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height={360}>
               <BarChart
                 data={topFiles}
                 layout="vertical"
@@ -174,7 +174,7 @@ function Overview({ metrics }) {
                 <YAxis
                   type="category"
                   dataKey="path"
-                  width={150}
+                  width={180}
                   tick={{ fontSize: 11, fill: '#334155' }}
                   tickLine={false}
                   axisLine={false}
