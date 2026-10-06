@@ -834,3 +834,18 @@ code {
   border: 1px solid var(--border);
   border-radius: 8px;
 }
+
+.tip {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+}
+
+.tip-title {
+  font-weight: 600;
+  margin-bottom: 3px;
+  word-break: break-all;
+}

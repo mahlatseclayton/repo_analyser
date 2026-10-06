@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { api } from './api'
+import Dashboard from './Dashboard'
 import FilterBar from './FilterBar'
 import { fmtInt, Spinner, StatusBadge, Toasts } from './ui'
 
@@ -406,7 +407,7 @@ function Workspace({
             filter={filter}
             onChange={onFilterChange}
           />
-          <FilterSummary
+          <Results
             metrics={metrics}
             metricsLoading={metricsLoading}
             metricsError={metricsError}
@@ -418,8 +419,9 @@ function Workspace({
   )
 }
 
-// Temporary result strip until the full dashboard lands (T11).
-function FilterSummary({ metrics, metricsLoading, metricsError, listModeEmpty }) {
+// ---- metrics results --------------------------------------------------------
+
+function Results({ metrics, metricsLoading, metricsError, listModeEmpty }) {
   if (listModeEmpty) {
     return (
       <div className="card">
@@ -436,37 +438,14 @@ function FilterSummary({ metrics, metricsLoading, metricsError, listModeEmpty })
     )
   }
   if (!metrics) return <Spinner label="Computing metrics…" />
-  const t = metrics.totals
   return (
-    <div className="card">
-      <div className="spread">
-        <h3>
-          Commit set |H| = {fmtInt(metrics.commit_set_size)}
-          {metricsLoading && <span className="muted small"> · updating…</span>}
-        </h3>
-        <span className="muted small">
-          object: <code>{metrics.object || '(root)'}</code>
-        </span>
+    <>
+      <div className="row small muted" style={{ justifyContent: 'flex-end', margin: '0 2px 8px' }}>
+        {metricsLoading
+          ? 'updating…'
+          : `object: ${metrics.object || '(root)'} · |H| = ${fmtInt(metrics.commit_set_size)}`}
       </div>
-      <div className="cards">
-        <div className="stat">
-          <div className="label">Added</div>
-          <div className="value">{fmtInt(t.added)}</div>
-        </div>
-        <div className="stat">
-          <div className="label">Removed</div>
-          <div className="value">{fmtInt(t.removed)}</div>
-        </div>
-        <div className="stat">
-          <div className="label">Churn (λ)</div>
-          <div className="value">{fmtInt(t.churn)}</div>
-        </div>
-        <div className="stat">
-          <div className="label">Modifications (n)</div>
-          <div className="value">{fmtInt(t.modifications)}</div>
-        </div>
-      </div>
-      <p className="muted small">Full dashboard (charts, tables, author views) arrives in the next task.</p>
-    </div>
+      <Dashboard metrics={metrics} />
+    </>
   )
 }
