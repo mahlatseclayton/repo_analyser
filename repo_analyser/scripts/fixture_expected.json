@@ -1,0 +1,174 @@
+{
+  "commits": [
+    {
+      "hash": "bfb77873ecf28c869e292ad1f285b2e278f74b40",
+      "ts": 1700000000,
+      "author": "Alice <alice@test>"
+    },
+    {
+      "hash": "a3af8a79debe16e9fbedc4b703d50aec3d634c78",
+      "ts": 1700003600,
+      "author": "Bob <bob@test>"
+    },
+    {
+      "hash": "fefaa8ac4ad1b8d3aabfaae78fe9cc79a768f4e7",
+      "ts": 1700007200,
+      "author": "Alice <alice@test>"
+    },
+    {
+      "hash": "154606fce7c91331e592fda10d65ef193cc6a780",
+      "ts": 1700010800,
+      "author": "Bob <bob@test>"
+    },
+    {
+      "hash": "9598c1209b3c31410ee7594cfa5addd6abff6bcb",
+      "ts": 1700014400,
+      "author": "Alice <alice@test>"
+    }
+  ],
+  "all": {
+    "commit_set_size": 5,
+    "totals": {
+      "added": 11,
+      "removed": 3,
+      "growth": 8,
+      "churn": 14,
+      "modifications": 3,
+      "frequency": 0.6,
+      "churn_rate": 2.8
+    },
+    "dirs": {
+      "": {
+        "added": 11,
+        "removed": 3,
+        "growth": 8,
+        "churn": 14,
+        "modifications": 3,
+        "frequency": 0.6,
+        "churn_rate": 2.8
+      },
+      "pkg/": {
+        "added": 1,
+        "removed": 0,
+        "growth": 1,
+        "churn": 1,
+        "modifications": 1,
+        "frequency": 0.2,
+        "churn_rate": 0.2
+      },
+      "pkg2/": {
+        "added": 0,
+        "removed": 0,
+        "growth": 0,
+        "churn": 0,
+        "modifications": 0,
+        "frequency": 0.0,
+        "churn_rate": 0.0
+      },
+      "sub/": {
+        "added": 2,
+        "removed": 2,
+        "growth": 0,
+        "churn": 4,
+        "modifications": 2,
+        "frequency": 0.4,
+        "churn_rate": 0.8
+      }
+    },
+    "files": {
+      "a.txt": {
+        "added": 6,
+        "removed": 1,
+        "growth": 5,
+        "churn": 7,
+        "modifications": 2
+      },
+      "a2.txt": {
+        "added": 0,
+        "removed": 0,
+        "growth": 0,
+        "churn": 0,
+        "modifications": 0
+      },
+      "a3.txt": {
+        "added": 2,
+        "removed": 0,
+        "growth": 2,
+        "churn": 2,
+        "modifications": 1
+      },
+      "pkg/x.py": {
+        "added": 1,
+        "removed": 0,
+        "growth": 1,
+        "churn": 1,
+        "modifications": 1
+      },
+      "pkg2/x.py": {
+        "added": 0,
+        "removed": 0,
+        "growth": 0,
+        "churn": 0,
+        "modifications": 0
+      },
+      "sub/b.txt": {
+        "added": 2,
+        "removed": 2,
+        "growth": 0,
+        "churn": 4,
+        "modifications": 2
+      }
+    },
+    "binary_excluded": [
+      "bin.dat"
+    ],
+    "authors": {
+      "Alice <alice@test>": {
+        "churn": 6,
+        "modifications": 1,
+        "ownership": 0.42857142857142855
+      },
+      "Bob <bob@test>": {
+        "churn": 8,
+        "modifications": 2,
+        "ownership": 0.5714285714285714
+      }
+    }
+  },
+  "author_filter_Bob": {
+    "commit_set_size": 2,
+    "totals": {
+      "added": 5,
+      "removed": 3,
+      "growth": 2,
+      "churn": 8,
+      "modifications": 2,
+      "frequency": 1.0,
+      "churn_rate": 4.0
+    }
+  },
+  "manual_list_c1_c4": {
+    "commit_set_size": 2,
+    "totals": {
+      "added": 8,
+      "removed": 0,
+      "growth": 8,
+      "churn": 8,
+      "modifications": 2,
+      "frequency": 1.0,
+      "churn_rate": 4.0
+    }
+  },
+  "range_from_c3": {
+    "commit_set_size": 3,
+    "totals": {
+      "added": 2,
+      "removed": 0,
+      "growth": 2,
+      "churn": 2,
+      "modifications": 1,
+      "frequency": 0.3333333333333333,
+      "churn_rate": 0.6666666666666666
+    }
+  }
+}

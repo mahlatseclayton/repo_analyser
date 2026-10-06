@@ -90,7 +90,7 @@ Commit count for progress: `git rev-list --count --no-merges HEAD`.
 | `sub/` | 2 | 2 | 0 | 4 | 2 | 0.4 | 0.8 |
 | `pkg/` | 1 | 0 | 1 | 1 | 1 | 0.2 | 0.2 |
 | `pkg2/` | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `a.txt` | 3 | 1 | 2 | 4 | 2 | — | — |
+| `a.txt` | 6 | 1 | 5 | 7 | 2 | — | — |
 | `a3.txt` | 2 | 0 | 2 | 2 | 1 | — | — |
 | `sub/b.txt` | 2 | 2 | 0 | 4 | 2 | — | — |
 | `a2.txt`, `pkg2/x.py` | 0 | 0 | 0 | 0 | 0 | — | — |
@@ -139,10 +139,10 @@ Dashboard views: **Overview** (stat cards l+/l−/δ/λ/n/η/ρ/|H|, trend line,
 
 Background jobs (started early, run while we code): `pip install` + `npm install` (T1), cJSON clone (after T2), cJSON indexing (after T4).
 
-- [ ] **T1 (5m) P0 — Scaffold & deps.** Project tree, `.gitignore`, Flask skeleton (`/api/health`, static serving), `web/` package.json (react 18, react-dom 18, recharts 2, vite 5 + plugin-react 4, exact pins), minimal React app. Background: `.venv` + `pip install flask`; `npm install`. First git commit.
-- [ ] **T2 (5m) P0 — Storage + ingestion.** Registry CRUD; zip upload (zip-slip-safe extract, `.git` detection root/1-deep, clear 400 if missing); clone URL (`--mirror`, bg thread, status); `GET/POST /api/repos`, `GET /status`, `DELETE`. Kick off cJSON clone in background. Commit.
-- [ ] **T3 (5m) P0 — Fixture + expected numbers.** `scripts/make_test_repo.sh` building exactly §5 (both authors), writes `scripts/fixture_expected.json` (per-commit hashes + timestamps + §5 table). Run it. Commit.
-- [ ] **T4 (5m) P0 — Parser (`engine/parse.py`).** Streaming `git log` parse per §3 rules (header/numstat/rename/binary/empty-commit, path interning), progress counter. Verify on fixture + cJSON. Commit.
+- [x] **T1 (5m) P0 — Scaffold & deps.** Project tree, `.gitignore`, Flask skeleton (`/api/health`, static serving), `web/` package.json (react 18, react-dom 18, recharts 2, vite 5 + plugin-react 4, exact pins), minimal React app. Background: `.venv` + `pip install flask`; `npm install`. First git commit.
+- [x] **T2 (5m) P0 — Storage + ingestion.** Registry CRUD; zip upload (zip-slip-safe extract, `.git` detection root/1-deep, clear 400 if missing); clone URL (`--mirror`, bg thread, status); `GET/POST /api/repos`, `GET /status`, `DELETE`. Kick off cJSON clone in background. Commit.
+- [x] **T3 (5m) P0 — Fixture + expected numbers.** `scripts/make_test_repo.sh` building exactly §5 (both authors), writes `scripts/fixture_expected.json` (per-commit hashes + timestamps + §5 table). Run it. Commit.
+- [x] **T4 (5m) P0 — Parser (`engine/parse.py`).** Streaming `git log` parse per §3 rules (header/numstat/rename/binary/empty-commit, path interning), progress counter. Verify on fixture + cJSON. Commit.
 - [ ] **T5 (7m) P0 — Metrics engine (`engine/metrics.py`).** Per-commit ancestor-dir rollup + root; query layer: commit sets (all/range/manual), author filter, totals, files, dirs, author dims (n_a, λ_a, ω), day/week time series. Fixture assertions from §5 pass. Commit.
 - [ ] **T6 (5m) P0 — Authors.** Mailmap parse (`git show HEAD:.mailmap`, both forms) + manual merge groups persisted per repo; applied in engine; `authors` / `mailmap` / `merges` endpoints. Verify: cJSON author list; API merge flips results. Commit.
 - [ ] **T7 (5m) P0 — Metrics API + pickers.** `POST /metrics` per §7; `GET /commits` (search/limit) + `GET /tree`; memo cache keyed by (repo, merge-version, filters). curl checks incl. author/range/list filters. Commit.

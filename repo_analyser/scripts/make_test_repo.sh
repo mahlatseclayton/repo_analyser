@@ -90,7 +90,7 @@ expected = {
                       "modifications": 2, "frequency": 0.4, "churn_rate": 0.8},
         },
         "files": {
-            "a.txt":     {"added": 3, "removed": 1, "growth": 2, "churn": 4, "modifications": 2},
+            "a.txt":     {"added": 6, "removed": 1, "growth": 5, "churn": 7, "modifications": 2},
             "a2.txt":    {"added": 0, "removed": 0, "growth": 0, "churn": 0, "modifications": 0},
             "a3.txt":    {"added": 2, "removed": 0, "growth": 2, "churn": 2, "modifications": 1},
             "pkg/x.py":  {"added": 1, "removed": 0, "growth": 1, "churn": 1, "modifications": 1},
