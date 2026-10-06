@@ -18,14 +18,14 @@ import {
 import { fmt2, fmtInt, fmtPct, SortableTable } from './ui'
 
 const PIE_COLORS = [
-  '#60a5fa', '#3b82f6', '#93c5fd', '#2563eb', '#38bdf8',
-  '#818cf8', '#a5b4fc', '#7dd3fc', '#94a3b8',
+  '#2563eb', '#60a5fa', '#93c5fd', '#1d4ed8', '#38bdf8',
+  '#818cf8', '#a5b4fc', '#c7d2fe', '#64748b',
 ]
 
 // Custom churn palette: jade green additions, crimson rose removals
-// (brightened for the dusk theme).
-const GOOD = '#22c58c'
-const BAD = '#ff6b70'
+// (deep tones for the light theme).
+const GOOD = '#0ba268'
+const BAD = '#e5484d'
 
 const TABS = [
   ['overview', 'Overview'],
@@ -125,15 +125,15 @@ function Overview({ metrics }) {
                     <stop offset="100%" stopColor={BAD} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#39445f" vertical={false} />
+                <CartesianGrid stroke="#eef2f7" vertical={false} />
                 <XAxis
                   dataKey="bucket"
-                  tick={{ fontSize: 12.5, fill: '#a9b6d6' }}
+                  tick={{ fontSize: 12.5, fill: '#64748b' }}
                   tickLine={false}
-                  axisLine={{ stroke: '#414d70' }}
+                  axisLine={{ stroke: '#e2e8f0' }}
                   minTickGap={28}
                 />
-                <YAxis tick={{ fontSize: 12.5, fill: '#a9b6d6' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 12.5, fill: '#64748b' }} tickLine={false} axisLine={false} />
                 <Tooltip formatter={(v) => fmtInt(v)} />
                 <Legend />
                 <Area
@@ -170,18 +170,18 @@ function Overview({ metrics }) {
                 layout="vertical"
                 margin={{ top: 4, right: 14, left: 4, bottom: 0 }}
               >
-                <CartesianGrid stroke="#39445f" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 12.5, fill: '#a9b6d6' }} tickLine={false} axisLine={false} />
+                <CartesianGrid stroke="#eef2f7" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 12.5, fill: '#64748b' }} tickLine={false} axisLine={false} />
                 <YAxis
                   type="category"
                   dataKey="path"
                   width={180}
-                  tick={{ fontSize: 12.5, fill: '#d4dcef' }}
+                  tick={{ fontSize: 12.5, fill: '#334155' }}
                   tickLine={false}
                   axisLine={false}
                   tickFormatter={shorten}
                 />
-                <Tooltip cursor={{ fill: 'rgba(96, 165, 250, 0.10)' }} content={<FileTip />} />
+                <Tooltip cursor={{ fill: 'rgba(37, 99, 235, 0.06)' }} content={<FileTip />} />
                 <Legend />
                 <Bar dataKey="added" name="Added" stackId="churn" fill={GOOD} />
                 <Bar dataKey="removed" name="Removed" stackId="churn" fill={BAD} radius={[0, 4, 4, 0]} />
