@@ -1,7 +1,7 @@
 :root {
   color-scheme: dark;
-  /* half-dark "dusk" theme: mid slate panels, same colour families */
-  --bg: #222a3e;
+  /* half-dark "dusk" theme: gray backdrop, slate panels, same colour families */
+  --bg: #2b2e33;
   --panel: #2a3450;
   --field: #232c44;
   --thead: #263049;
